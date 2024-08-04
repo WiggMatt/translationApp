@@ -1,4 +1,4 @@
-package ru.matthew.translationApp.service;
+package ru.matthew.translation.service;
 
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;

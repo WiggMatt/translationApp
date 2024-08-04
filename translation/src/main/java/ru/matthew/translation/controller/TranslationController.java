@@ -1,10 +1,10 @@
-package ru.matthew.translationApp.controller;
+package ru.matthew.translation.controller;
 
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
-import ru.matthew.translationApp.repository.TranslationRequestRepository;
-import ru.matthew.translationApp.service.TranslationService;
+import ru.matthew.translation.repository.TranslationRequestRepository;
+import ru.matthew.translation.service.TranslationService;
 
 @RestController
 public class TranslationController {

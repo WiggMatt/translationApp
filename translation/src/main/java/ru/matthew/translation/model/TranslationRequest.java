@@ -1,4 +1,4 @@
-package ru.matthew.translationApp.model;
+package ru.matthew.translation.model;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
