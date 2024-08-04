@@ -1,4 +1,4 @@
-HELP.md
+README.md
 target/
 !.mvn/wrapper/maven-wrapper.jar
 !**/src/main/**/target/
@@ -33,4 +33,4 @@ build/
 .vscode/
 
 ### properties-dev ###
-/src/main/resources/application-dev.properties
+/translation/src/main/resources/application-dev.properties
