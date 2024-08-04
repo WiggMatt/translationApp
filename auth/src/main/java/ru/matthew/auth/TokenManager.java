@@ -18,7 +18,7 @@ public class TokenManager {
         refreshToken(); // Обновляем токен при старте
     }
 
-    @Scheduled(fixedRate = 43200000) // 12 часов в миллисекундах
+    @Scheduled(fixedRate = 3600000) // 1 час в миллисекундах
     public void refreshToken() {
         this.iamToken = tokenFetcher.fetchToken();
     }

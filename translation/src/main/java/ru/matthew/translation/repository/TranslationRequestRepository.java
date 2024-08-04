@@ -2,6 +2,7 @@ package ru.matthew.translation.repository;
 
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
+import ru.matthew.translation.model.TranslationRequest;
 
 @Repository
 public class TranslationRequestRepository {
@@ -12,8 +13,8 @@ public class TranslationRequestRepository {
         this.jdbcTemplate = jdbcTemplate;
     }
 
-    public void saveRequest(String ipAddress) {
-        String sql = "INSERT INTO TRANSLATION_REQUESTS (ip_address) VALUES (?)";
-        jdbcTemplate.update(sql, ipAddress);
+    public void saveRequest(TranslationRequest request) {
+        String sql = "INSERT INTO TRANSLATION_REQUESTS (ip_address, input_text, translated_text) VALUES (?, ?, ?)";
+        jdbcTemplate.update(sql, request.getIpAddress(), request.getInputText(), request.getTranslatedText());
     }
 }

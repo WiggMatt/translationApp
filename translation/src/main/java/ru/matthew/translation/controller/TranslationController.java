@@ -1,26 +1,32 @@
 package ru.matthew.translation.controller;
 
 import jakarta.servlet.http.HttpServletRequest;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RestController;
-import ru.matthew.translation.repository.TranslationRequestRepository;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
 import ru.matthew.translation.service.TranslationService;
 
 @RestController
+@RequestMapping("/translate")
 public class TranslationController {
-
     private final TranslationService translationService;
-    private final TranslationRequestRepository translationRequestRepository;
 
-    public TranslationController(TranslationService translationService, TranslationRequestRepository translationRequestRepository) {
+    public TranslationController(TranslationService translationService) {
         this.translationService = translationService;
-        this.translationRequestRepository = translationRequestRepository;
     }
 
-    @GetMapping("/languages")
-    public String getLanguages(HttpServletRequest request) {
-        String ipAddress = request.getRemoteAddr();
-        translationRequestRepository.saveRequest(ipAddress);
-        return translationService.getLanguages("b1gloo1se7vi30bsl33b");
+    @PostMapping
+    public ResponseEntity<String> translate(@RequestParam("sourceLanguageCode") String sourceLanguageCode,
+                                            @RequestParam("targetLanguageCode") String targetLanguageCode,
+                                            @RequestParam("texts") String texts,
+                                            HttpServletRequest request) {
+        try {
+            String translatedText = translationService.translateText(sourceLanguageCode, targetLanguageCode, texts);
+            String ipAddress = request.getRemoteAddr();
+            translationService.saveRequest(ipAddress, texts, translatedText);
+            return ResponseEntity.ok(translatedText);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Translation failed: " + e.getMessage());
+        }
     }
 }
