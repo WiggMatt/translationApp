@@ -17,7 +17,7 @@ public class TokenFetcher {
 
     public TokenFetcher(RestTemplate restTemplate) {
         this.restTemplate = restTemplate;
-        this.objectMapper = new ObjectMapper(); // Создание ObjectMapper
+        this.objectMapper = new ObjectMapper();
     }
 
     public String fetchToken() {
@@ -45,6 +45,9 @@ public class TokenFetcher {
 
         try {
             TokenResponse tokenResponse = objectMapper.readValue(responseBody, TokenResponse.class);
+            if (tokenResponse.getIamToken() == null) {
+                throw new RuntimeException("IAM token is missing in the response");
+            }
             return tokenResponse.getIamToken();
         } catch (Exception e) {
             throw new RuntimeException("Failed to parse token from response", e);
