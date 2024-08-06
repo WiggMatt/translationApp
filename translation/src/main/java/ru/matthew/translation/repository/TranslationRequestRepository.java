@@ -21,14 +21,14 @@ public class TranslationRequestRepository {
         try {
             jdbcTemplate.update(sql, request.getIpAddress(), request.getInputText(), request.getTranslatedText());
         } catch (DuplicateKeyException e) {
-            // Обработка ошибки, когда запись с таким же ключом уже существует
-            throw new RuntimeException("Duplicate record error: " + e.getMessage(), e);
+            // Обработка ошибки дублирования ключа
+            throw new RuntimeException("Ошибка сохранения запроса перевода: дублирование ключа. Возможно, такой запрос уже существует.", e);
         } catch (DataAccessException e) {
-            // Обработка общих ошибок доступа к данным
-            throw new RuntimeException("Data access error: " + e.getMessage(), e);
+            // Общие ошибки доступа к данным
+            throw new RuntimeException("Ошибка доступа к базе данных при сохранении запроса перевода.", e);
         } catch (Exception e) {
-            // Обработка других неожиданных ошибок
-            throw new RuntimeException("Unexpected error: " + e.getMessage(), e);
+            // Обработка всех остальных исключений
+            throw new RuntimeException("Неизвестная ошибка при сохранении запроса перевода.", e);
         }
     }
 }

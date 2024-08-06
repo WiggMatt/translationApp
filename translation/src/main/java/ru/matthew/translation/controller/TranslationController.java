@@ -4,36 +4,44 @@ import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import ru.matthew.translation.service.TranslationService;
+import ru.matthew.translation.exception.DatabaseException;
+import ru.matthew.translation.exception.ThreadException;
+import ru.matthew.translation.exception.YandexAPIAccessException;
 import ru.matthew.translation.model.TranslationRequestDTO;
+import ru.matthew.translation.service.TranslationService;
 
 @RestController
-@RequestMapping
+@RequestMapping()
 public class TranslationController {
     private final TranslationService translationService;
+
+    private boolean isNullOrEmpty(String str) {
+        return str == null || str.trim().isEmpty();
+    }
 
     public TranslationController(TranslationService translationService) {
         this.translationService = translationService;
     }
-
 
     @GetMapping("/languages")
     public ResponseEntity<String> getLanguages() {
         try {
             String languages = translationService.getLanguages();
             return ResponseEntity.ok(languages);
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Failed to get languages: " + e.getMessage());
+        } catch (YandexAPIAccessException e) {
+            return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE)
+                    .body(e.getMessage());
         }
     }
 
     @PostMapping("/translate")
     public ResponseEntity<String> translate(@RequestBody TranslationRequestDTO translationRequestDTO,
                                             HttpServletRequest request) {
-        if (translationRequestDTO.getSourceLanguageCode() == null ||
-                translationRequestDTO.getTargetLanguageCode() == null ||
-                translationRequestDTO.getTexts() == null || translationRequestDTO.getTexts().trim().isEmpty()) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid input data");
+        if (isNullOrEmpty(translationRequestDTO.getSourceLanguageCode()) ||
+                isNullOrEmpty(translationRequestDTO.getTargetLanguageCode()) ||
+                isNullOrEmpty(translationRequestDTO.getTexts())) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body("Некорректные входные данные: не указаны все необходимые параметры.");
         }
 
         try {
@@ -42,18 +50,21 @@ public class TranslationController {
                     translationRequestDTO.getTargetLanguageCode(),
                     translationRequestDTO.getTexts()
             );
+
             String ipAddress = request.getRemoteAddr();
             translationService.saveRequest(ipAddress, translationRequestDTO.getTexts(), translatedText);
+
             return ResponseEntity.ok(translatedText);
+
+        } catch (ThreadException | DatabaseException e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(e.getMessage());
+        } catch (YandexAPIAccessException e) {
+            return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE)
+                    .body(e.getMessage());
         } catch (IllegalArgumentException e) {
-            return ResponseEntity.status
-                    (HttpStatus.BAD_REQUEST).body("Invalid translation request: " + e.getMessage());
-        } catch (RuntimeException e) {
-            return ResponseEntity.status
-                    (HttpStatus.INTERNAL_SERVER_ERROR).body("Translation failed: " + e.getMessage());
-        } catch (Exception e) {
-            return ResponseEntity.status
-                    (HttpStatus.INTERNAL_SERVER_ERROR).body("Unexpected error occurred: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(e.getMessage());
         }
     }
 }
